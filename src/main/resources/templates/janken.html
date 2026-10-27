@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
   <meta charset="UTF-8">
@@ -10,9 +10,7 @@
 
   <h1>じゃんけん</h1>
 
-  <p>
-    ログインユーザ：[[${loginUser}]]
-  </p>
+  <p>Hi <span sec:authentication="name"></span></p>
 
   <p>
     <a href="/logout">ログアウト</a>
