@@ -22,7 +22,10 @@ class WaitingTests {
   @Autowired JdbcTemplate jdbc;
 
   @BeforeEach
-  void resetWaiting() { jdbc.update("delete from matchinfo where isActive=TRUE"); }
+  void resetWaiting() {
+    jdbc.update("delete from matchinfo where id > 2");
+    jdbc.update("delete from matches where id > 3");
+  }
 
   HttpClient login(String name) throws Exception {
     var client = HttpClient.newBuilder().cookieHandler(new CookieManager()).build();
@@ -67,5 +70,35 @@ class WaitingTests {
     assertThat(get(honda, "/wait?id=999&hand=Gu").statusCode()).isEqualTo(400);
     assertThat(get(honda, "/wait?id=3&hand=invalid").statusCode()).isEqualTo(400);
     assertThat(jdbc.queryForObject("select count(*) from matchinfo where isActive=TRUE", Integer.class)).isZero();
+  }
+
+  @Test
+  void secondPlayerCompletesExactlyTheWaitingMatch() throws Exception {
+    var honda = login("ほんだ");
+    var igaki = login("いがき");
+    assertThat(get(honda, "/wait?id=3&hand=Gu").statusCode()).isEqualTo(200);
+    int waitingId = jdbc.queryForObject("select id from matchinfo where isActive=TRUE", Integer.class);
+    // 先手の再読み込みで待機行を重複作成しない。
+    assertThat(get(honda, "/wait?id=3&hand=Gu").statusCode()).isEqualTo(200);
+    assertThat(jdbc.queryForObject("select count(*) from matchinfo where isActive=TRUE", Integer.class)).isEqualTo(1);
+    assertThat(get(igaki, "/match?id=2").statusCode()).isEqualTo(200);
+    assertThat(get(igaki, "/wait?id=2&hand=Choki").statusCode()).isEqualTo(200);
+    assertThat(jdbc.queryForObject("select isActive from matchinfo where id=?", Boolean.class, waitingId)).isFalse();
+    assertThat(jdbc.queryForMap("select * from matches where isActive=TRUE"))
+        .containsEntry("USER1", 2L).containsEntry("USER2", 3L)
+        .containsEntry("USER1HAND", "Gu").containsEntry("USER2HAND", "Choki")
+        .containsEntry("ISACTIVE", true);
+    assertThat(jdbc.queryForObject("select count(*) from matches", Integer.class)).isEqualTo(4);
+    assertThat(get(honda, "/janken").body()).doesNotContain("isActive:true");
+  }
+
+  @Test
+  void inactiveAndUnrelatedWaitingRowsAreNotMatched() throws Exception {
+    jdbc.update("insert into matchinfo(user1,user2,user1Hand,isActive) values(1,3,'Pa',TRUE)");
+    var igaki = login("いがき");
+    assertThat(get(igaki, "/wait?id=2&hand=Choki").statusCode()).isEqualTo(200);
+    assertThat(jdbc.queryForObject("select count(*) from matches", Integer.class)).isEqualTo(3);
+    assertThat(jdbc.queryForObject("select count(*) from matchinfo where user1=3 and user2=2 and isActive=TRUE", Integer.class)).isEqualTo(1);
+    assertThat(jdbc.queryForObject("select isActive from matchinfo where user1=1 and user2=3", Boolean.class)).isTrue();
   }
 }
