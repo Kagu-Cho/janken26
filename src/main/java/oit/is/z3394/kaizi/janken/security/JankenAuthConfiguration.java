@@ -17,11 +17,21 @@ public class JankenAuthConfiguration {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     http
+        // H2 Consoleを使用するためCSRFを無効化
+        .csrf(csrf -> csrf.disable())
+
+        // H2 Consoleをiframeで表示できるようにする
+        .headers(headers -> headers
+            .frameOptions(frameOptions -> frameOptions.sameOrigin()))
+
         .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/h2-console/**").permitAll()
             .requestMatchers("/janken", "/janken/**").authenticated()
             .anyRequest().permitAll())
+
         .formLogin(form -> form
             .permitAll())
+
         .logout(logout -> logout
             .logoutSuccessUrl("/")
             .permitAll());
