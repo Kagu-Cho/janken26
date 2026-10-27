@@ -28,6 +28,18 @@
     Hi [[${name}]]
   </p>
 
+  <h2>試合結果</h2>
+
+  <ul>
+    <li th:each="match : ${matches}">
+      id:[[${match.id}]]
+      user1:[[${match.user1}]]
+      user2:[[${match.user2}]]
+      user1Hand:[[${match.user1Hand}]]
+      user2Hand:[[${match.user2Hand}]]
+    </li>
+  </ul>
+
   <p>出す手を選んでください。</p>
 
   <p>
