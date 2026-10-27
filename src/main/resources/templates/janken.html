@@ -19,7 +19,7 @@
   <h2>エントリー</h2>
 
   <ul>
-    <li th:each="user : ${users}">
+    <li th:each="user : ${users}" th:if="${user.name != #authentication.name}">
       <a th:href="@{/match(id=${user.id})}">
         [[${user.name}]]
       </a>
@@ -29,6 +29,14 @@
   <p th:if="${name}">
     Hi [[${name}]]
   </p>
+
+  <h2>アクティブな試合</h2>
+  <ul id="active-matches">
+    <li th:each="info : ${activeMatches}">
+      id:[[${info.id}]] user1:[[${info.user1}]] ([[${info.user1Name}]])
+      user2:[[${info.user2}]] ([[${info.user2Name}]]) isActive:[[${info.isActive}]]
+    </li>
+  </ul>
 
   <h2>試合結果</h2>
 
