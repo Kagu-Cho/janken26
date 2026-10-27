@@ -8,5 +8,20 @@
   <h1>じゃんけん</h1>
   <p>Hi [[${loginUser}]]</p>
   <p id="waiting">相手の手を待ってます</p>
+  <section id="result" hidden aria-live="polite">
+    <h2>対戦結果</h2>
+    <p id="result-text"></p>
+    <a id="back" th:href="@{/janken}">[戻る]</a>
+  </section>
+  <script th:inline="javascript">
+    const source = new EventSource(/*[[@{/results/{id}(id=${matchInfoId})}]]*/ "/results/0");
+    source.addEventListener("result", event => {
+      document.getElementById("result-text").textContent = event.data;
+      document.getElementById("waiting").hidden = true;
+      document.getElementById("result").hidden = false;
+      source.close();
+    });
+    window.addEventListener("pagehide", () => source.close());
+  </script>
 </body>
 </html>

@@ -6,6 +6,7 @@ public class MatchInfo {
   private int user2;
   private String user1Hand;
   private boolean isActive;
+  private Integer resultId;
   private String user1Name;
   private String user2Name;
 
@@ -19,6 +20,8 @@ public class MatchInfo {
   public void setUser1Hand(String user1Hand) { this.user1Hand = user1Hand; }
   public boolean getIsActive() { return isActive; }
   public void setIsActive(boolean isActive) { this.isActive = isActive; }
+  public Integer getResultId() { return resultId; }
+  public void setResultId(Integer resultId) { this.resultId = resultId; }
   public String getUser1Name() { return user1Name; }
   public void setUser1Name(String user1Name) { this.user1Name = user1Name; }
   public String getUser2Name() { return user2Name; }
