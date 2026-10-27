@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Options;
 
 @Mapper
 public interface MatchMapper {
@@ -14,5 +15,6 @@ public interface MatchMapper {
 
   @Insert("INSERT INTO MATCHES (USER1, USER2, USER1HAND, USER2HAND, ISACTIVE) "
       + "VALUES (#{user1}, #{user2}, #{user1Hand}, #{user2Hand}, #{isActive})")
+  @Options(useGeneratedKeys = true, keyProperty = "id")
   void insertMatch(Match match);
 }

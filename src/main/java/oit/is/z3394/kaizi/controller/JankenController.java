@@ -19,6 +19,7 @@ import oit.is.z3394.kaizi.janken.model.MatchInfo;
 import oit.is.z3394.kaizi.janken.model.MatchInfoMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.transaction.annotation.Transactional;
 import oit.is.z3394.kaizi.janken.model.User;
 import oit.is.z3394.kaizi.janken.model.UserMapper;
 
@@ -43,6 +44,7 @@ public class JankenController {
   }
 
   @GetMapping("/wait")
+  @Transactional
   public String waitForOpponent(@RequestParam Integer id, @RequestParam String hand,
       Principal principal, ModelMap model) {
     User user = userMapper.selectByName(principal.getName());
@@ -54,12 +56,25 @@ public class JankenController {
     if (id == 1) {
       return fight(id, hand, principal, model);
     }
-    MatchInfo info = new MatchInfo();
-    info.setUser1(user.getId());
-    info.setUser2(id);
-    info.setUser1Hand(hand);
-    info.setIsActive(true);
-    matchInfoMapper.insert(info);
+    matchInfoMapper.lockPlayers(user.getId(), id);
+    MatchInfo info = matchInfoMapper.selectWaiting(id, user.getId());
+    if (info != null) {
+      Match result = new Match(info.getUser1(), user.getId(), info.getUser1Hand(), hand);
+      result.setIsActive(true);
+      matchMapper.insertMatch(result);
+      matchInfoMapper.finish(info.getId());
+    } else {
+      // 待機ページの再読み込みでは同じ先手のレコードを増やさない。
+      info = matchInfoMapper.selectWaiting(user.getId(), id);
+      if (info == null) {
+        info = new MatchInfo();
+        info.setUser1(user.getId());
+        info.setUser2(id);
+        info.setUser1Hand(hand);
+        info.setIsActive(true);
+        matchInfoMapper.insert(info);
+      }
+    }
     model.addAttribute("loginUser", principal.getName());
     model.addAttribute("matchInfoId", info.getId());
     return "wait.html";
