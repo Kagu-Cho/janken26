@@ -1,19 +1,20 @@
 package oit.is.z3394.kaizi.janken.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.PathVariable;
-
 import java.security.Principal;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import oit.is.z3394.kaizi.janken.model.Janken;
 import oit.is.z3394.kaizi.janken.model.Entry;
+import oit.is.z3394.kaizi.janken.model.Janken;
+import oit.is.z3394.kaizi.janken.model.Match;
+import oit.is.z3394.kaizi.janken.model.MatchMapper;
 import oit.is.z3394.kaizi.janken.model.User;
 import oit.is.z3394.kaizi.janken.model.UserMapper;
 
@@ -25,6 +26,9 @@ public class JankenController {
 
   @Autowired
   private UserMapper userMapper;
+
+  @Autowired
+  private MatchMapper matchMapper;
 
   @GetMapping("/janken")
   public String janken(Principal principal, ModelMap model) {
@@ -40,6 +44,10 @@ public class JankenController {
     ArrayList<User> users = userMapper.selectAllUsers();
     model.addAttribute("users", users);
 
+    // DBから全試合結果を取得
+    ArrayList<Match> matches = matchMapper.selectAllMatches();
+    model.addAttribute("matches", matches);
+
     return "janken.html";
   }
 
@@ -51,6 +59,10 @@ public class JankenController {
     // DBから全ユーザを取得
     ArrayList<User> users = userMapper.selectAllUsers();
     model.addAttribute("users", users);
+
+    // DBから全試合結果を取得
+    ArrayList<Match> matches = matchMapper.selectAllMatches();
+    model.addAttribute("matches", matches);
 
     return "janken.html";
   }
@@ -71,6 +83,10 @@ public class JankenController {
     // DBから全ユーザを取得
     ArrayList<User> users = userMapper.selectAllUsers();
     model.addAttribute("users", users);
+
+    // DBから全試合結果を取得
+    ArrayList<Match> matches = matchMapper.selectAllMatches();
+    model.addAttribute("matches", matches);
 
     Janken janken = new Janken(hand);
     model.addAttribute("janken", janken);
