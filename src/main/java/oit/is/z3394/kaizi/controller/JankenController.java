@@ -109,4 +109,52 @@ public class JankenController {
 
     return "match.html";
   }
+
+  @GetMapping("/fight")
+  public String fight(
+      @RequestParam Integer id,
+      @RequestParam String hand,
+      Principal principal,
+      ModelMap model) {
+
+    // ログインユーザ
+    String loginUser = principal.getName();
+
+    // ログインユーザと対戦相手をDBから取得
+    User user = userMapper.selectByName(loginUser);
+    User opponent = userMapper.selectById(id);
+
+    // CPUの手は固定でよい
+    String cpuHand = "Gu";
+
+    // 試合結果をDBへ登録
+    Match match = new Match(
+        user.getId(),
+        opponent.getId(),
+        hand,
+        cpuHand);
+
+    matchMapper.insertMatch(match);
+
+    // 勝敗判定
+    String result;
+
+    if (hand.equals(cpuHand)) {
+      result = "あいこ";
+    } else if ((hand.equals("Gu") && cpuHand.equals("Choki"))
+        || (hand.equals("Choki") && cpuHand.equals("Pa"))
+        || (hand.equals("Pa") && cpuHand.equals("Gu"))) {
+      result = "ほんだの勝ち";
+    } else {
+      result = "CPUの勝ち";
+    }
+
+    model.addAttribute("loginUser", loginUser);
+    model.addAttribute("opponent", opponent);
+    model.addAttribute("userHand", hand);
+    model.addAttribute("cpuHand", cpuHand);
+    model.addAttribute("result", result);
+
+    return "match.html";
+  }
 }

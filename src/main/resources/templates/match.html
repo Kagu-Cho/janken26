@@ -14,7 +14,23 @@
     [[${loginUser}]] vs [[${opponent.name}]]
   </h2>
 
-  <a href="/janken">もどる</a>
+  <p>出す手を選んでください</p>
+
+  <p>
+    <a th:href="@{/fight(id=${opponent.id},hand='Gu')}">グー</a>
+    <a th:href="@{/fight(id=${opponent.id},hand='Choki')}">チョキ</a>
+    <a th:href="@{/fight(id=${opponent.id},hand='Pa')}">パー</a>
+  </p>
+
+  <div th:if="${result}">
+    <p>ほんだの手：[[${userHand}]]</p>
+    <p>CPUの手：[[${cpuHand}]]</p>
+    <p>結果：[[${result}]]</p>
+  </div>
+
+  <p>
+    <a href="/janken">もどる</a>
+  </p>
 
 </body>
 
