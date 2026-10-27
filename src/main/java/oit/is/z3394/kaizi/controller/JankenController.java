@@ -15,6 +15,10 @@ import oit.is.z3394.kaizi.janken.model.Entry;
 import oit.is.z3394.kaizi.janken.model.Janken;
 import oit.is.z3394.kaizi.janken.model.Match;
 import oit.is.z3394.kaizi.janken.model.MatchMapper;
+import oit.is.z3394.kaizi.janken.model.MatchInfo;
+import oit.is.z3394.kaizi.janken.model.MatchInfoMapper;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 import oit.is.z3394.kaizi.janken.model.User;
 import oit.is.z3394.kaizi.janken.model.UserMapper;
 
@@ -29,6 +33,37 @@ public class JankenController {
 
   @Autowired
   private MatchMapper matchMapper;
+
+  @Autowired
+  private MatchInfoMapper matchInfoMapper;
+
+  @org.springframework.web.bind.annotation.ModelAttribute
+  public void activeMatches(ModelMap model) {
+    model.addAttribute("activeMatches", matchInfoMapper.selectActive());
+  }
+
+  @GetMapping("/wait")
+  public String waitForOpponent(@RequestParam Integer id, @RequestParam String hand,
+      Principal principal, ModelMap model) {
+    User user = userMapper.selectByName(principal.getName());
+    User opponent = userMapper.selectById(id);
+    if (user == null || opponent == null || user.getId() == id
+        || !java.util.Set.of("Gu", "Choki", "Pa").contains(hand)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "対戦相手と手を確認してください");
+    }
+    if (id == 1) {
+      return fight(id, hand, principal, model);
+    }
+    MatchInfo info = new MatchInfo();
+    info.setUser1(user.getId());
+    info.setUser2(id);
+    info.setUser1Hand(hand);
+    info.setIsActive(true);
+    matchInfoMapper.insert(info);
+    model.addAttribute("loginUser", principal.getName());
+    model.addAttribute("matchInfoId", info.getId());
+    return "wait.html";
+  }
 
   @GetMapping("/janken")
   public String janken(Principal principal, ModelMap model) {
