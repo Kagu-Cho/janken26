@@ -17,5 +17,6 @@ CREATE TABLE matchinfo (
     user1 BIGINT NOT NULL REFERENCES users(id),
     user2 BIGINT NOT NULL REFERENCES users(id),
     user1Hand VARCHAR(5) NOT NULL CHECK (user1Hand IN ('Gu', 'Choki', 'Pa')),
+    resultId BIGINT REFERENCES matches(id),
     isActive BOOLEAN NOT NULL DEFAULT FALSE
 );

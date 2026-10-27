@@ -18,8 +18,11 @@ public interface MatchInfoMapper {
       + "AND isActive=TRUE ORDER BY id LIMIT 1 FOR UPDATE")
   MatchInfo selectWaiting(@Param("user1") int user1, @Param("user2") int user2);
 
-  @Update("UPDATE matchinfo SET isActive=FALSE WHERE id=#{id} AND isActive=TRUE")
-  int finish(int id);
+  @Update("UPDATE matchinfo SET isActive=FALSE, resultId=#{resultId} WHERE id=#{id} AND isActive=TRUE")
+  int finish(@Param("id") int id, @Param("resultId") int resultId);
+
+  @Select("SELECT * FROM matchinfo WHERE id=#{id}")
+  MatchInfo selectById(int id);
 
   @Select("SELECT m.*, a.name AS user1Name, b.name AS user2Name FROM matchinfo m "
       + "JOIN users a ON a.id=m.user1 JOIN users b ON b.id=m.user2 "

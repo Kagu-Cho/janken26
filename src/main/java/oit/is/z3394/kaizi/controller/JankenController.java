@@ -20,6 +20,8 @@ import oit.is.z3394.kaizi.janken.model.MatchInfoMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import oit.is.z3394.kaizi.janken.service.AsyncKekka;
 import oit.is.z3394.kaizi.janken.model.User;
 import oit.is.z3394.kaizi.janken.model.UserMapper;
 
@@ -37,6 +39,21 @@ public class JankenController {
 
   @Autowired
   private MatchInfoMapper matchInfoMapper;
+
+  @Autowired
+  private AsyncKekka asyncKekka;
+
+  @GetMapping(value = "/results/{id}", produces = "text/event-stream")
+  public SseEmitter results(@PathVariable int id, Principal principal) {
+    User user = userMapper.selectByName(principal.getName());
+    MatchInfo info = matchInfoMapper.selectById(id);
+    if (user == null || info == null || (info.getUser1() != user.getId() && info.getUser2() != user.getId())) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
+    SseEmitter emitter = new SseEmitter(60000L);
+    asyncKekka.watch(id, emitter);
+    return emitter;
+  }
 
   @org.springframework.web.bind.annotation.ModelAttribute
   public void activeMatches(ModelMap model) {
@@ -62,7 +79,7 @@ public class JankenController {
       Match result = new Match(info.getUser1(), user.getId(), info.getUser1Hand(), hand);
       result.setIsActive(true);
       matchMapper.insertMatch(result);
-      matchInfoMapper.finish(info.getId());
+      matchInfoMapper.finish(info.getId(), result.getId());
     } else {
       // 待機ページの再読み込みでは同じ先手のレコードを増やさない。
       info = matchInfoMapper.selectWaiting(user.getId(), id);
