@@ -20,7 +20,9 @@
 
   <ul>
     <li th:each="user : ${users}">
-      [[${user.name}]]
+      <a th:href="@{/match(id=${user.id})}">
+        [[${user.name}]]
+      </a>
     </li>
   </ul>
 

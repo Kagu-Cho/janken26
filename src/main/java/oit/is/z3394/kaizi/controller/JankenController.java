@@ -93,4 +93,20 @@ public class JankenController {
 
     return "janken.html";
   }
+
+  @GetMapping("/match")
+  public String match(
+      @RequestParam Integer id,
+      Principal principal,
+      ModelMap model) {
+
+    String loginUser = principal.getName();
+
+    User opponent = userMapper.selectById(id);
+
+    model.addAttribute("loginUser", loginUser);
+    model.addAttribute("opponent", opponent);
+
+    return "match.html";
+  }
 }
